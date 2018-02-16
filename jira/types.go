@@ -3,7 +3,6 @@ package jira
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 )
 
 // HTTPDoer definition goes here?
@@ -32,7 +31,7 @@ type User = string
 
 // Issue definition goes here
 type Issue struct {
-	JiraID     int
+	JiraID     string
 	JiraKey    string
 	ExternalID string
 }
@@ -46,8 +45,7 @@ func (i *Issue) UnmarshalJSON(b []byte) error {
 	fieldmap := m["fields"]
 	v := fieldmap.(map[string]interface{})
 
-	id := m["id"].(string)
-	i.JiraID, _ = strconv.Atoi(id)
+	i.JiraID, _ = m["id"].(string)
 	i.JiraKey = m["key"].(string)
 	i.ExternalID = v["customfield_10101"].(string)
 

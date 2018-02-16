@@ -22,7 +22,7 @@ type databaseConfig struct {
 
 type wioConfig struct {
 	Jira jiraConfig
-	DB   databaseConfig
+	DB   databaseConfig `toml:"database"`
 }
 
 func readConfig(filename string) (cfg wioConfig) {

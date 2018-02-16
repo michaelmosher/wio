@@ -33,7 +33,11 @@ func importIssues(j jira.Client, db database.Client) {
 	}
 
 	for i := range issueChan {
-		fmt.Println(i)
+		err := db.SaveIssue(i)
+
+		if err != nil {
+			fmt.Println(err)
+		}
 		// save issue
 	}
 }

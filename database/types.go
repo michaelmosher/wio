@@ -22,9 +22,9 @@ type Client struct {
 }
 
 // New function
-func New(user, pass, host, port, db string) Client {
+func New(user, pass, host, port, name string) Client {
 	connStrTemplate := "postgres://%s:%s@%s:%s/%s?sslmode=disable"
-	connStr := fmt.Sprintf(connStrTemplate, user, pass, host, port, db)
+	connStr := fmt.Sprintf(connStrTemplate, user, pass, host, port, name)
 
 	return Client{sqlx.MustConnect("postgres", connStr)}
 }
