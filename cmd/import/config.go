@@ -12,8 +12,17 @@ type jiraConfig struct {
 	Password string
 }
 
+type databaseConfig struct {
+	User string
+	Pass string
+	Host string
+	Port string
+	Name string
+}
+
 type wioConfig struct {
 	Jira jiraConfig
+	DB   databaseConfig
 }
 
 func readConfig(filename string) (cfg wioConfig) {

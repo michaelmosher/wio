@@ -14,7 +14,7 @@ import (
 )
 
 // Issues function
-func (c Client) Issues(user string, issueC chan Issue) {
+func (c Client) Issues(user User, issueC chan Issue) {
 	res := c.IssueSearch(user, 0)
 
 	done := sendIssues(issueC, res)
@@ -27,7 +27,7 @@ func (c Client) Issues(user string, issueC chan Issue) {
 }
 
 // IssueSearch function
-func (c Client) IssueSearch(user string, startAt int) SearchResponse {
+func (c Client) IssueSearch(user User, startAt int) SearchResponse {
 	req := c.issueSearchRequest(user, startAt)
 	resp, err := c.httpClient.Do(req)
 
@@ -42,7 +42,7 @@ func (c Client) IssueSearch(user string, startAt int) SearchResponse {
 // this would fetch issues that were open OR recently closed.
 // given the change to constantly polling and storing issues,
 // I now believe this is an unneccessary complication.
-func (c Client) issueSearchRequest(user string, startAt int) *http.Request {
+func (c Client) issueSearchRequest(user User, startAt int) *http.Request {
 	belongingToUser := fmt.Sprintf("assignee=%s", user)
 	beingUnresolved := "resolution = Unresolved"
 	withOpenAirData := "\"External issue ID\" is not EMPTY"

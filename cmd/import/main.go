@@ -5,26 +5,27 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/michaelmosher/wio/database"
 	"github.com/michaelmosher/wio/jira"
 )
 
 func main() {
 	cfg := readConfig("wio.toml")
-	// connect to mysql
 	// connect to redis
 	client := &http.Client{
 		Timeout: time.Second * 10,
 	}
 
-	j := jira.New(cfg.Jira.Hostname, cfg.Jira.Username, cfg.Jira.Password, client)
+	jira := jira.New(cfg.Jira.Hostname, cfg.Jira.Username, cfg.Jira.Password, client)
+	db := database.New(cfg.DB.User, cfg.DB.Pass, cfg.DB.Host, cfg.DB.Port, cfg.DB.Name)
 
-	importIssues(j)
+	importIssues(jira, db)
 	// fetch worklogs -> save worklogs
 	// publish worklogs to redis
 }
 
-func importIssues(j jira.Client /*, database //coming soon */) {
-	users := [1]string{"michaelm"} // this will come from DB soon
+func importIssues(j jira.Client, db database.Client) {
+	users := [1]jira.User{"michaelm"} // this will come from DB soon
 
 	issueChan := make(chan jira.Issue)
 	for _, u := range users {

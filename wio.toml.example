@@ -1,4 +1,11 @@
-[Jira]
-hostname = atlassian.net
-username = admin
-password = password
+[jira]
+hostname = "atlassian.net"
+username = "admin"
+password = "password"
+
+[database]
+user = "postgres"
+pass = "password"
+host = "localhost"
+port = "5432"
+name = "wio_dev"

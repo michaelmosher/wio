@@ -27,6 +27,9 @@ type SearchResponse struct {
 	Issues     []Issue `json:"issues"`
 }
 
+// User definition goes here
+type User = string
+
 // Issue definition goes here
 type Issue struct {
 	JiraID     int
