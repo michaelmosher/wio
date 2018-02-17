@@ -20,24 +20,45 @@ func main() {
 	db := database.New(cfg.DB.User, cfg.DB.Pass, cfg.DB.Host, cfg.DB.Port, cfg.DB.Name)
 
 	importIssues(jira, db)
+	importWorklogs(jira, db)
 	// fetch worklogs -> save worklogs
 	// publish worklogs to redis
 }
 
 func importIssues(j jira.Client, db database.Client) {
-	users := [1]jira.User{"michaelm"} // this will come from DB soon
+	users, _ := db.LoadJiraUsers()
 
 	issueChan := make(chan jira.Issue)
-	for _, u := range users {
-		go j.Issues(u, issueChan)
-	}
+
+	go func() {
+		for _, u := range users {
+			j.Issues(u, issueChan)
+		}
+		close(issueChan)
+	}()
 
 	for i := range issueChan {
-		err := db.SaveIssue(i)
+		err := db.SaveJiraIssue(i)
 
 		if err != nil {
 			fmt.Println(err)
 		}
-		// save issue
+	}
+}
+
+func importWorklogs(j jira.Client, db database.Client) {
+	issues, _ := db.LoadJiraIssues()
+
+	worklogChan := make(chan jira.Worklog, 2)
+
+	go func() {
+		for _, i := range issues {
+			j.Worklogs(i, worklogChan)
+		}
+		close(worklogChan)
+	}()
+
+	for w := range worklogChan {
+		fmt.Println(w)
 	}
 }

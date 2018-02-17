@@ -1,23 +1,38 @@
 package database
 
-import "github.com/michaelmosher/wio/jira"
+import (
+	"github.com/michaelmosher/wio/jira"
+)
 
-// func (db *DBClient) LoadJiraUsers() (users []jira.User) {
+// LoadJiraUsers functions
+func (db *Client) LoadJiraUsers() (users []jira.User, err error) {
+	smt := "SELECT USERNAME FROM jira_users order by id;"
 
-// }
-
-// LoadUsers
-
-// SaveIssue function
-func (db *Client) SaveIssue(i jira.Issue) (err error) {
-	iSmt := `INSERT INTO issues (jira_id, jira_key, external_id)
-	         VALUES (:jiraid, :jirakey, :externalid)
-			 ON CONFLICT (jira_key) DO
-				UPDATE SET external_id = EXCLUDED.external_id;`
-	_, err = db.NamedExec(iSmt, i)
+	err = db.Select(&users, smt)
 	return
 }
 
-// LoadIssues
-// SaveWorklog
+// SaveJiraIssue function
+func (db *Client) SaveJiraIssue(i jira.Issue) (err error) {
+	iSmt := `INSERT INTO jira_issues (jira_id, jira_key, external_id) VALUES ($1, $2, $3)
+			 ON CONFLICT (jira_key) DO
+				UPDATE SET external_id = EXCLUDED.external_id;`
+
+	_, err = db.Exec(iSmt, i.JiraID, i.JiraKey, i.ExternalID)
+	return
+}
+
+// LoadJiraIssues function
+func (db *Client) LoadJiraIssues() (issues []jira.Issue, err error) {
+	smt := "SELECT jira_id, jira_key, external_id from jira_issues order by id;"
+
+	err = db.Select(&issues, smt)
+	return
+}
+
+// SaveWorklog function
+func (db *Client) SaveWorklog(w jira.Worklog) (new bool, err error) {
+	return
+}
+
 // LoadWorklogs

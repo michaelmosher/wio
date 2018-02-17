@@ -23,7 +23,6 @@ func (c Client) Issues(user User, issueC chan Issue) {
 		res = c.IssueSearch(user, res.StartAt+res.MaxResults)
 		done = sendIssues(issueC, res)
 	}
-	close(issueC)
 }
 
 // IssueSearch function
@@ -59,7 +58,10 @@ func (c Client) issueSearchRequest(user User, startAt int) *http.Request {
 	return req
 }
 
-func issueSearchResponse(resp *http.Response) SearchResponse {
+// yes, the body of issueSearchResponse is identical to the body of issueWorklogsResponse
+// yes, this is annoying
+// they have different signatures, so we can't really parameterize that
+func issueSearchResponse(resp *http.Response) (r SearchResponse) {
 	defer resp.Body.Close()
 	bodyText, err := ioutil.ReadAll(resp.Body)
 
@@ -67,9 +69,8 @@ func issueSearchResponse(resp *http.Response) SearchResponse {
 		log.Fatal(err)
 	}
 
-	var r SearchResponse
 	json.Unmarshal(bodyText, &r)
-	return r
+	return
 }
 
 func sendIssues(issueC chan Issue, r SearchResponse) (done bool) {
@@ -80,10 +81,59 @@ func sendIssues(issueC chan Issue, r SearchResponse) (done bool) {
 	return r.Total <= r.StartAt+r.MaxResults
 }
 
-// Issue.GetWorklogs
-// User.GetOpenIssues function (and someway to get recently closed issues?)
-// GetWorklogs function
-// Issue.getWorklogs function
+// Worklogs function
+func (c Client) Worklogs(i Issue, worklogC chan Worklog) {
+	res := c.IssueWorklogs(i, 0)
+
+	done := sendWorklogs(worklogC, res)
+
+	for !done {
+		res = c.IssueWorklogs(i, res.StartAt+res.MaxResults)
+		done = sendWorklogs(worklogC, res)
+	}
+}
+
+// IssueWorklogs function
+func (c Client) IssueWorklogs(i Issue, startAt int) WorklogResponse {
+	req := c.issueWorklogsRequest(i, startAt)
+	resp, err := c.httpClient.Do(req)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return issueWorklogsResponse(resp)
+}
+
+func (c Client) issueWorklogsRequest(i Issue, startAt int) *http.Request {
+	req := c.requestBuilder("/rest/api/2/issue/" + i.JiraKey + "/worklog")
+
+	q := req.URL.Query()
+	q.Add("startAt", strconv.Itoa(startAt))
+	req.URL.RawQuery = q.Encode()
+
+	return req
+}
+
+func issueWorklogsResponse(resp *http.Response) (r WorklogResponse) {
+	defer resp.Body.Close()
+	bodyText, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	json.Unmarshal(bodyText, &r)
+	return
+}
+
+func sendWorklogs(worklogC chan Worklog, r WorklogResponse) (done bool) {
+	for _, i := range r.Worklogs {
+		worklogC <- i
+	}
+
+	return r.Total <= r.StartAt+r.MaxResults
+}
 
 func (c Client) requestBuilder(location string) *http.Request {
 	url := c.hostname + location

@@ -11,9 +11,9 @@ import (
 )
 
 type myDB interface {
-	NamedExec(query string, arg interface{}) (sql.Result, error)
 	Select(dest interface{}, query string, args ...interface{}) error
 	QueryRowx(query string, args ...interface{}) *sqlx.Row
+	Exec(query string, args ...interface{}) (sql.Result, error)
 }
 
 // Client struct wraps sqlx.db so we can write functions like client.LoadUsers()
